@@ -13,3 +13,14 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 )
+
+const (
+	ScavengePrefix = "scavenge-value-"
+	ScavengeCountPrefix = "scavenge-count-"
+)
+		
+const (
+	CommitPrefix = "commit-value-"
+	CommitCountPrefix = "commit-count-"
+)
+		
