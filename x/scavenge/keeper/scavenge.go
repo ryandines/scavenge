@@ -1,12 +1,13 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strconv"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/starport/scavenge/x/scavenge/types"
-    "github.com/cosmos/cosmos-sdk/codec"
 )
 
 // GetScavengeCount get the total number of scavenge
@@ -31,7 +32,7 @@ func (k Keeper) GetScavengeCount(ctx sdk.Context) int64 {
 }
 
 // SetScavengeCount set the total number of scavenge
-func (k Keeper) SetScavengeCount(ctx sdk.Context, count int64)  {
+func (k Keeper) SetScavengeCount(ctx sdk.Context, count int64) {
 	store := ctx.KVStore(k.storeKey)
 	byteKey := []byte(types.ScavengeCountPrefix)
 	bz := []byte(strconv.FormatInt(count, 10))
@@ -39,33 +40,18 @@ func (k Keeper) SetScavengeCount(ctx sdk.Context, count int64)  {
 }
 
 // CreateScavenge creates a scavenge
-func (k Keeper) CreateScavenge(ctx sdk.Context, msg types.MsgCreateScavenge) {
-	// Create the scavenge
-	count := k.GetScavengeCount(ctx)
-    var scavenge = types.Scavenge{
-        Creator: msg.Creator,
-        ID:      strconv.FormatInt(count, 10),
-        Description: msg.Description,
-        SolutionHash: msg.SolutionHash,
-        Reward: msg.Reward,
-        Solution: msg.Solution,
-        Scavenger: msg.Scavenger,
-    }
-
+func (k Keeper) CreateScavenge(ctx sdk.Context, scavenge types.Scavenge) {
 	store := ctx.KVStore(k.storeKey)
-	key := []byte(types.ScavengePrefix + scavenge.ID)
+	key := []byte(types.ScavengePrefix + scavenge.SolutionHash)
 	value := k.cdc.MustMarshalBinaryLengthPrefixed(scavenge)
 	store.Set(key, value)
-
-	// Update scavenge count
-    k.SetScavengeCount(ctx, count+1)
 }
 
 // GetScavenge returns the scavenge information
-func (k Keeper) GetScavenge(ctx sdk.Context, key string) (types.Scavenge, error) {
+func (k Keeper) GetScavenge(ctx sdk.Context, solutionHash string) (types.Scavenge, error) {
 	store := ctx.KVStore(k.storeKey)
 	var scavenge types.Scavenge
-	byteKey := []byte(types.ScavengePrefix + key)
+	byteKey := []byte(types.ScavengePrefix + solutionHash)
 	err := k.cdc.UnmarshalBinaryLengthPrefixed(store.Get(byteKey), &scavenge)
 	if err != nil {
 		return scavenge, err
@@ -75,17 +61,20 @@ func (k Keeper) GetScavenge(ctx sdk.Context, key string) (types.Scavenge, error)
 
 // SetScavenge sets a scavenge
 func (k Keeper) SetScavenge(ctx sdk.Context, scavenge types.Scavenge) {
-	scavengeKey := scavenge.ID
+	solutionHash := scavenge.SolutionHash
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(scavenge)
-	key := []byte(types.ScavengePrefix + scavengeKey)
+	key := []byte(types.ScavengePrefix + solutionHash)
+
+	// You can perform additional checks here, depending on your use case
+
 	store.Set(key, bz)
 }
 
 // DeleteScavenge deletes a scavenge
-func (k Keeper) DeleteScavenge(ctx sdk.Context, key string) {
+func (k Keeper) DeleteScavenge(ctx sdk.Context, solutionHash string) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete([]byte(types.ScavengePrefix + key))
+	store.Delete([]byte(types.ScavengePrefix + solutionHash))
 }
 
 //
@@ -106,8 +95,8 @@ func listScavenge(ctx sdk.Context, k Keeper) ([]byte, error) {
 }
 
 func getScavenge(ctx sdk.Context, path []string, k Keeper) (res []byte, sdkError error) {
-	key := path[0]
-	scavenge, err := k.GetScavenge(ctx, key)
+	solutionHash := path[0]
+	scavenge, err := k.GetScavenge(ctx, solutionHash)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +109,7 @@ func getScavenge(ctx sdk.Context, path []string, k Keeper) (res []byte, sdkError
 	return res, nil
 }
 
-// Get creator of the item
+// GetScavengeOwner => Get creator of the item
 func (k Keeper) GetScavengeOwner(ctx sdk.Context, key string) sdk.AccAddress {
 	scavenge, err := k.GetScavenge(ctx, key)
 	if err != nil {
@@ -129,8 +118,7 @@ func (k Keeper) GetScavengeOwner(ctx sdk.Context, key string) sdk.AccAddress {
 	return scavenge.Creator
 }
 
-
-// Check if the key exists in the store
+// ScavengeExists => Check if the key exists in the store
 func (k Keeper) ScavengeExists(ctx sdk.Context, key string) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has([]byte(types.ScavengePrefix + key))

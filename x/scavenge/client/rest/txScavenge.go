@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/starport/scavenge/x/scavenge/types"
 )
 
@@ -15,14 +15,12 @@ import (
 var _ = strconv.Itoa(42)
 
 type createScavengeRequest struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	Creator string `json:"creator"`
-	Description string `json:"description"`
-	SolutionHash string `json:"solutionHash"`
-	Reward string `json:"reward"`
-	Solution string `json:"solution"`
-	Scavenger string `json:"scavenger"`
-	
+	BaseReq      rest.BaseReq   `json:"base_req"`
+	Creator      string         `json:"creator"`
+	Description  string         `json:"description"`
+	SolutionHash string         `json:"solutionHash"`
+	Reward       sdk.Coins      `json:"reward"`
+	Scavenger    sdk.AccAddress `json:"scavenger"`
 }
 
 func createScavengeHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -42,26 +40,21 @@ func createScavengeHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		
 		parsedDescription := req.Description
-		
+
 		parsedSolutionHash := req.SolutionHash
-		
+
 		parsedReward := req.Reward
-		
-		parsedSolution := req.Solution
-		
-		parsedScavenger := req.Scavenger
-		
+
+		// parsedSolution := req.Solution
+
+		// parsedScavenger := req.Scavenger
 
 		msg := types.NewMsgCreateScavenge(
 			creator,
 			parsedDescription,
 			parsedSolutionHash,
 			parsedReward,
-			parsedSolution,
-			parsedScavenger,
-			
 		)
 
 		err = msg.ValidateBasic()
@@ -75,15 +68,14 @@ func createScavengeHandler(cliCtx context.CLIContext) http.HandlerFunc {
 }
 
 type setScavengeRequest struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	ID 		string `json:"id"`
-	Creator string `json:"creator"`
-	Description string `json:"description"`
-	SolutionHash string `json:"solutionHash"`
-	Reward string `json:"reward"`
-	Solution string `json:"solution"`
-	Scavenger string `json:"scavenger"`
-	
+	BaseReq      rest.BaseReq   `json:"base_req"`
+	ID           string         `json:"id"`
+	Creator      string         `json:"creator"`
+	Description  string         `json:"description"`
+	SolutionHash string         `json:"solutionHash"`
+	Reward       string         `json:"reward"`
+	Solution     string         `json:"solution"`
+	Scavenger    sdk.AccAddress `json:"scavenger"`
 }
 
 func setScavengeHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -103,27 +95,23 @@ func setScavengeHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		
 		parsedDescription := req.Description
-		
+
 		parsedSolutionHash := req.SolutionHash
-		
+
 		parsedReward := req.Reward
-		
+
 		parsedSolution := req.Solution
-		
+
 		parsedScavenger := req.Scavenger
-		
 
 		msg := types.NewMsgSetScavenge(
 			creator,
-			req.ID,
 			parsedDescription,
 			parsedSolutionHash,
 			parsedReward,
 			parsedSolution,
 			parsedScavenger,
-			
 		)
 
 		err = msg.ValidateBasic()
@@ -138,8 +126,8 @@ func setScavengeHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 type deleteScavengeRequest struct {
 	BaseReq rest.BaseReq `json:"base_req"`
-	Creator string `json:"creator"`
-	ID 		string `json:"id"`
+	Creator string       `json:"creator"`
+	ID      string       `json:"id"`
 }
 
 func deleteScavengeHandler(cliCtx context.CLIContext) http.HandlerFunc {

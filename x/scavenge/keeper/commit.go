@@ -1,12 +1,13 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strconv"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/starport/scavenge/x/scavenge/types"
-    "github.com/cosmos/cosmos-sdk/codec"
 )
 
 // GetCommitCount get the total number of commit
@@ -31,7 +32,7 @@ func (k Keeper) GetCommitCount(ctx sdk.Context) int64 {
 }
 
 // SetCommitCount set the total number of commit
-func (k Keeper) SetCommitCount(ctx sdk.Context, count int64)  {
+func (k Keeper) SetCommitCount(ctx sdk.Context, count int64) {
 	store := ctx.KVStore(k.storeKey)
 	byteKey := []byte(types.CommitCountPrefix)
 	bz := []byte(strconv.FormatInt(count, 10))
@@ -39,26 +40,13 @@ func (k Keeper) SetCommitCount(ctx sdk.Context, count int64)  {
 }
 
 // CreateCommit creates a commit
-func (k Keeper) CreateCommit(ctx sdk.Context, msg types.MsgCreateCommit) {
-	// Create the commit
-	count := k.GetCommitCount(ctx)
-    var commit = types.Commit{
-        Creator: msg.Creator,
-        ID:      strconv.FormatInt(count, 10),
-        SolutionHash: msg.SolutionHash,
-        SolutionScavengerHash: msg.SolutionScavengerHash,
-    }
-
+func (k Keeper) CreateCommit(ctx sdk.Context, commit types.Commit) {
 	store := ctx.KVStore(k.storeKey)
-	key := []byte(types.CommitPrefix + commit.ID)
+	key := []byte(types.CommitPrefix + commit.SolutionScavengerHash)
 	value := k.cdc.MustMarshalBinaryLengthPrefixed(commit)
 	store.Set(key, value)
-
-	// Update commit count
-    k.SetCommitCount(ctx, count+1)
 }
 
-// GetCommit returns the commit information
 func (k Keeper) GetCommit(ctx sdk.Context, key string) (types.Commit, error) {
 	store := ctx.KVStore(k.storeKey)
 	var commit types.Commit
@@ -72,7 +60,7 @@ func (k Keeper) GetCommit(ctx sdk.Context, key string) (types.Commit, error) {
 
 // SetCommit sets a commit
 func (k Keeper) SetCommit(ctx sdk.Context, commit types.Commit) {
-	commitKey := commit.ID
+	commitKey := commit.SolutionHash
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(commit)
 	key := []byte(types.CommitPrefix + commitKey)
@@ -89,19 +77,6 @@ func (k Keeper) DeleteCommit(ctx sdk.Context, key string) {
 // Functions used by querier
 //
 
-func listCommit(ctx sdk.Context, k Keeper) ([]byte, error) {
-	var commitList []types.Commit
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, []byte(types.CommitPrefix))
-	for ; iterator.Valid(); iterator.Next() {
-		var commit types.Commit
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(store.Get(iterator.Key()), &commit)
-		commitList = append(commitList, commit)
-	}
-	res := codec.MustMarshalJSONIndent(k.cdc, commitList)
-	return res, nil
-}
-
 func getCommit(ctx sdk.Context, path []string, k Keeper) (res []byte, sdkError error) {
 	key := path[0]
 	commit, err := k.GetCommit(ctx, key)
@@ -117,15 +92,27 @@ func getCommit(ctx sdk.Context, path []string, k Keeper) (res []byte, sdkError e
 	return res, nil
 }
 
-// Get creator of the item
+func listCommit(ctx sdk.Context, k Keeper) ([]byte, error) {
+	var commitList []types.Commit
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(types.CommitPrefix))
+	for ; iterator.Valid(); iterator.Next() {
+		var commit types.Commit
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(store.Get(iterator.Key()), &commit)
+		commitList = append(commitList, commit)
+	}
+	res := codec.MustMarshalJSONIndent(k.cdc, commitList)
+	return res, nil
+}
+
+// GetCommitOwner - get creator of the item
 func (k Keeper) GetCommitOwner(ctx sdk.Context, key string) sdk.AccAddress {
 	commit, err := k.GetCommit(ctx, key)
 	if err != nil {
 		return nil
 	}
-	return commit.Creator
+	return commit.Scavenger
 }
-
 
 // Check if the key exists in the store
 func (k Keeper) CommitExists(ctx sdk.Context, key string) bool {

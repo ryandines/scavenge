@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/starport/scavenge/x/scavenge/types"
 )
 
@@ -15,11 +15,10 @@ import (
 var _ = strconv.Itoa(42)
 
 type createCommitRequest struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	Creator string `json:"creator"`
-	SolutionHash string `json:"solutionHash"`
-	SolutionScavengerHash string `json:"solutionScavengerHash"`
-	
+	BaseReq               rest.BaseReq `json:"base_req"`
+	Creator               string       `json:"creator"`
+	SolutionHash          string       `json:"solutionHash"`
+	SolutionScavengerHash string       `json:"solutionScavengerHash"`
 }
 
 func createCommitHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -39,17 +38,14 @@ func createCommitHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		
 		parsedSolutionHash := req.SolutionHash
-		
-		parsedSolutionScavengerHash := req.SolutionScavengerHash
-		
 
-		msg := types.NewMsgCreateCommit(
+		parsedSolutionScavengerHash := req.SolutionScavengerHash
+
+		msg := types.NewMsgCommitSolution(
 			creator,
 			parsedSolutionHash,
 			parsedSolutionScavengerHash,
-			
 		)
 
 		err = msg.ValidateBasic()
@@ -63,12 +59,11 @@ func createCommitHandler(cliCtx context.CLIContext) http.HandlerFunc {
 }
 
 type setCommitRequest struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	ID 		string `json:"id"`
-	Creator string `json:"creator"`
-	SolutionHash string `json:"solutionHash"`
-	SolutionScavengerHash string `json:"solutionScavengerHash"`
-	
+	BaseReq               rest.BaseReq `json:"base_req"`
+	ID                    string       `json:"id"`
+	Creator               string       `json:"creator"`
+	SolutionHash          string       `json:"solutionHash"`
+	SolutionScavengerHash string       `json:"solutionScavengerHash"`
 }
 
 func setCommitHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -88,18 +83,15 @@ func setCommitHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		
 		parsedSolutionHash := req.SolutionHash
-		
+
 		parsedSolutionScavengerHash := req.SolutionScavengerHash
-		
 
 		msg := types.NewMsgSetCommit(
 			creator,
 			req.ID,
 			parsedSolutionHash,
 			parsedSolutionScavengerHash,
-			
 		)
 
 		err = msg.ValidateBasic()
@@ -114,8 +106,8 @@ func setCommitHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 type deleteCommitRequest struct {
 	BaseReq rest.BaseReq `json:"base_req"`
-	Creator string `json:"creator"`
-	ID 		string `json:"id"`
+	Creator string       `json:"creator"`
+	ID      string       `json:"id"`
 }
 
 func deleteCommitHandler(cliCtx context.CLIContext) http.HandlerFunc {

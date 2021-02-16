@@ -4,18 +4,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/starport/scavenge/x/scavenge/types"
 	"github.com/starport/scavenge/x/scavenge/keeper"
+	"github.com/starport/scavenge/x/scavenge/types"
 )
 
 func handleMsgSetCommit(ctx sdk.Context, k keeper.Keeper, msg types.MsgSetCommit) (*sdk.Result, error) {
 	var commit = types.Commit{
-		Creator: msg.Creator,
-		ID:      msg.ID,
-    	SolutionHash: msg.SolutionHash,
-    	SolutionScavengerHash: msg.SolutionScavengerHash,
+		Scavenger:             msg.Scavenger,
+		SolutionHash:          msg.SolutionHash,
+		SolutionScavengerHash: msg.SolutionScavengerHash,
 	}
-	if !msg.Creator.Equals(k.GetCommitOwner(ctx, msg.ID)) { // Checks if the the msg sender is the same as the current owner
+	if !msg.Scavenger.Equals(k.GetCommitOwner(ctx, msg.SolutionHash)) { // Checks if the the msg sender is the same as the current owner
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "Incorrect Owner") // If not, throw an error
 	}
 

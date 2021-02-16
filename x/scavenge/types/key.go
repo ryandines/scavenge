@@ -15,12 +15,15 @@ const (
 )
 
 const (
+	// ScavengePrefix is for the hash
 	ScavengePrefix = "scavenge-value-"
+	// ScavengeCountPrefix is for the hash
 	ScavengeCountPrefix = "scavenge-count-"
 )
-		
+
 const (
+	// CommitPrefix is for the hash
 	CommitPrefix = "commit-value-"
+	// CommitCountPrefix is for the hash
 	CommitCountPrefix = "commit-count-"
 )
-		

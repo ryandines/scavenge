@@ -7,42 +7,47 @@ import (
 
 var _ sdk.Msg = &MsgSetCommit{}
 
+// MsgSetCommit implements IMessage
 type MsgSetCommit struct {
-  ID      string      `json:"id" yaml:"id"`
-  Creator sdk.AccAddress `json:"creator" yaml:"creator"`
-  SolutionHash string `json:"solutionHash" yaml:"solutionHash"`
-  SolutionScavengerHash string `json:"solutionScavengerHash" yaml:"solutionScavengerHash"`
+	Scavenger             sdk.AccAddress `json:"scavenger" yaml:"scavenger"`
+	SolutionHash          string         `json:"solutionHash" yaml:"solutionHash"`
+	SolutionScavengerHash string         `json:"solutionScavengerHash" yaml:"solutionScavengerHash"`
 }
 
-func NewMsgSetCommit(creator sdk.AccAddress, id string, solutionHash string, solutionScavengerHash string) MsgSetCommit {
-  return MsgSetCommit{
-    ID: id,
-		Creator: creator,
-    SolutionHash: solutionHash,
-    SolutionScavengerHash: solutionScavengerHash,
+// NewMsgSetCommit implements IMessage
+func NewMsgSetCommit(scavenger sdk.AccAddress, id string, solutionHash string, solutionScavengerHash string) MsgSetCommit {
+	return MsgSetCommit{
+		Scavenger:             scavenger,
+		SolutionHash:          solutionHash,
+		SolutionScavengerHash: solutionScavengerHash,
 	}
 }
 
+// Route implements IMessage
 func (msg MsgSetCommit) Route() string {
-  return RouterKey
+	return RouterKey
 }
 
+// Type implements IMessage
 func (msg MsgSetCommit) Type() string {
-  return "SetCommit"
+	return "SetCommit"
 }
 
+// GetSigners implements IMessage
 func (msg MsgSetCommit) GetSigners() []sdk.AccAddress {
-  return []sdk.AccAddress{sdk.AccAddress(msg.Creator)}
+	return []sdk.AccAddress{sdk.AccAddress(msg.Scavenger)}
 }
 
+// GetSignBytes implements IMessage
 func (msg MsgSetCommit) GetSignBytes() []byte {
-  bz := ModuleCdc.MustMarshalJSON(msg)
-  return sdk.MustSortJSON(bz)
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
 }
 
+// ValidateBasic implements IMessage
 func (msg MsgSetCommit) ValidateBasic() error {
-  if msg.Creator.Empty() {
-    return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "creator can't be empty")
-  }
-  return nil
+	if msg.Scavenger.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "creator can't be empty")
+	}
+	return nil
 }
